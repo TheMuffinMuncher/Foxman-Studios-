@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foxman Studios — Independent games, made honest</title>
+<meta name="description" content="Foxman Studios is an independent game studio. We openly use generative AI to create custom sprites and UI — faster, cheaper, and fully disclosed.">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🦊</text></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c11; --bg2:#0e1118;
+    --panel:rgba(255,255,255,.035);
+    --border:rgba(255,255,255,.09);
+    --border-strong:rgba(255,255,255,.18);
+    --text:#eceff5; --muted:#a3adbf; --faint:#6f7a8d;
+    --accent:#ff8a3d; --accent2:#ffb15c;
+    --grad:linear-gradient(135deg,#ffb15c,#ff7a3d 55%,#ff5d3a);
+    --ok:#5fd39a; --warn:#ffc267; --blue:#8fb7ff; --danger:#ff6b6b;
+    --radius:18px;
+    --font-display:'Space Grotesk','Segoe UI',system-ui,sans-serif;
+    --font-body:'Inter','Segoe UI',system-ui,sans-serif;
+    --font-mono:'JetBrains Mono','Consolas',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:92px}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:var(--font-body);font-size:16px;line-height:1.65;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;
+  }
+  ::selection{background:rgba(255,138,61,.35)}
+  ::-webkit-scrollbar{width:10px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:#2a3140;border-radius:6px}
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  img,svg{display:block}
+  .container{max-width:1140px;margin-inline:auto;padding-inline:24px}
+  h1,h2,h3,h4{font-family:var(--font-display);line-height:1.15;letter-spacing:-.01em}
+
+  /* ---------- Notice bar ---------- */
+  .notice-bar{
+    background:linear-gradient(90deg,rgba(255,138,61,.16),rgba(255,93,58,.10));
+    border-bottom:1px solid var(--border);
+    font-size:13.5px;padding:9px 16px;text-align:center;color:var(--text);
+  }
+  .notice-bar a{font-weight:600;text-decoration:underline;text-underline-offset:3px}
+
+  /* ---------- Header / nav ---------- */
+  header{
+    position:sticky;top:0;z-index:60;
+    background:rgba(10,12,17,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid transparent;transition:border-color .3s, box-shadow .3s;
+  }
+  header.scrolled{border-bottom-color:var(--border);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .brand{display:flex;align-items:center;gap:11px;text-decoration:none!important}
+  .logo-mark{width:36px;height:36px;filter:drop-shadow(0 4px 14px rgba(255,122,61,.45))}
+  .brand-name{font-family:var(--font-display);font-weight:700;font-size:19px;color:var(--text)}
+  .brand-name span{color:var(--faint);font-weight:500}
+  .nav-links{display:flex;align-items:center;gap:26px}
+  .nav-links a{color:var(--muted);font-size:14.5px;font-weight:500;text-decoration:none;transition:color .2s}
+  .nav-links a:hover{color:var(--text)}
+  .nav-cta{margin-left:8px}
+  .burger{
+    display:none;background:none;border:1px solid var(--border-strong);border-radius:10px;
+    width:42px;height:38px;cursor:pointer;color:var(--text);font-size:17px;line-height:1;
+  }
+  @media (max-width:880px){
+    .burger{display:block}
+    .nav-links{
+      display:none;position:absolute;top:68px;left:0;right:0;
+      flex-direction:column;align-items:flex-start;gap:4px;
+      background:rgba(10,12,17,.98);border-bottom:1px solid var(--border);
+      padding:14px 24px 22px;
+    }
+    .nav-links a{padding:10px 4px;font-size:16px;width:100%}
+    body.menu-open .nav-links{display:flex}
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:var(--font-display);font-weight:600;font-size:15px;
+    padding:12px 22px;border-radius:12px;cursor:pointer;
+    text-decoration:none!important;transition:transform .2s,box-shadow .2s,background .2s,border-color .2s;
+    border:1px solid transparent;
+  }
+  .btn-primary{background:var(--grad);color:#1c0d05}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(255,122,61,.35)}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--border-strong)}
+  .btn-ghost:hover{background:var(--panel);transform:translateY(-2px)}
+  .btn-small{padding:9px 16px;font-size:13.5px;border-radius:10px}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;padding:120px 0 110px;overflow:hidden;text-align:center}
+  .hero::before{
+    content:"";position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+    background-size:46px 46px;
+    -webkit-mask-image:radial-gradient(ellipse 65% 60% at 50% 10%,black 35%,transparent 78%);
+    mask-image:radial-gradient(ellipse 65% 60% at 50% 10%,black 35%,transparent 78%);
+  }
+  .blob{position:absolute;border-radius:50%;filter:blur(95px);opacity:.32;pointer-events:none;animation:drift 16s ease-in-out infinite alternate}
+  .blob-1{width:460px;height:460px;background:#ff7a3d;top:-140px;left:-120px}
+  .blob-2{width:420px;height:420px;background:#4f46e5;top:-80px;right:-140px;animation-delay:-7s}
+  @keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(40px,50px) scale(1.12)}}
+  .hero-inner{position:relative;z-index:1;max-width:820px;margin-inline:auto}
+  .hero-badge{
+    display:inline-flex;align-items:center;gap:8px;
+    border:1px solid var(--border-strong);border-radius:999px;
+    padding:7px 16px;font-size:13px;color:var(--muted);
+    background:rgba(255,255,255,.04);margin-bottom:26px;
+  }
+  .hero-badge b{color:var(--accent2)}
+  .hero h1{font-size:clamp(2.5rem,5.4vw,4.1rem);font-weight:700;margin-bottom:22px}
+  .grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.lede{color:var(--muted);font-size:18px;max-width:640px;margin:0 auto 34px}
+  .hero p.lede strong{color:var(--text);font-weight:600}
+  .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:52px}
+  .hero-stats{display:flex;justify-content:center;gap:clamp(24px,6vw,64px);flex-wrap:wrap}
+  .stat b{display:block;font-family:var(--font-display);font-size:26px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat span{font-size:13px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em}
+
+  /* ---------- Sections ---------- */
+  section{padding:96px 0;position:relative}
+  section:nth-of-type(even){background:var(--bg2)}
+  .section-head{max-width:680px;margin-bottom:52px}
+  .section-head.center{margin-inline:auto;text-align:center}
+  .kicker{
+    display:inline-block;font-family:var(--font-display);font-size:12.5px;font-weight:600;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;
+  }
+  h2{font-size:clamp(1.9rem,3.4vw,2.6rem);font-weight:700;margin-bottom:14px}
+  .section-head p{color:var(--muted);font-size:16.5px}
+
+  /* ---------- Games ---------- */
+  .games-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+  @media (max-width:900px){.games-grid{grid-template-columns:1fr}}
+  .game-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    overflow:hidden;transition:transform .3s,border-color .3s,box-shadow .3s;
+    display:flex;flex-direction:column;
+  }
+  .game-card:hover{transform:translateY(-5px);border-color:rgba(255,138,61,.4);box-shadow:0 20px 44px rgba(0,0,0,.45)}
+  .game-art{height:190px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .game-emoji{font-size:76px;filter:drop-shadow(0 16px 28px rgba(0,0,0,.55));animation:float 5s ease-in-out infinite alternate}
+  @keyframes float{from{transform:translateY(-6px) rotate(-3deg)}to{transform:translateY(8px) rotate(3deg)}}
+  .status{
+    position:absolute;top:14px;left:14px;font-size:11.5px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.09em;padding:5px 11px;border-radius:999px;
+    backdrop-filter:blur(6px);font-family:var(--font-display);
+  }
+  .status.released{background:rgba(95,211,154,.16);color:#8ce7b8;border:1px solid rgba(95,211,154,.4)}
+  .status.wip{background:rgba(255,194,103,.14);color:var(--warn);border:1px solid rgba(255,194,103,.4)}
+  .status.soon{background:rgba(143,183,255,.14);color:var(--blue);border:1px solid rgba(143,183,255,.4)}
+  .status.proto{background:rgba(255,255,255,.09);color:var(--muted);border:1px solid var(--border-strong)}
+  .prov-chip{
+    position:absolute;bottom:12px;right:12px;font-size:11px;color:var(--accent2);
+    border:1px dashed rgba(255,177,92,.55);border-radius:999px;padding:4px 10px;
+    background:rgba(10,12,17,.55);backdrop-filter:blur(6px);
+  }
+  .art-ember{background:radial-gradient(circle at 72% 18%,rgba(255,122,61,.55),transparent 55%),radial-gradient(circle at 18% 85%,rgba(255,77,42,.35),transparent 50%),linear-gradient(160deg,#2b1108,#140a09)}
+  .art-neon{background:radial-gradient(circle at 28% 24%,rgba(124,92,255,.5),transparent 55%),radial-gradient(circle at 78% 78%,rgba(56,208,255,.3),transparent 50%),linear-gradient(160deg,#17103a,#0a0a1c)}
+  .art-vale{background:radial-gradient(circle at 25% 25%,rgba(122,222,140,.42),transparent 55%),radial-gradient(circle at 82% 72%,rgba(255,196,84,.26),transparent 50%),linear-gradient(160deg,#0f2a14,#0a1a10)}
+  .art-howl{background:radial-gradient(circle at 70% 28%,rgba(150,180,210,.32),transparent 50%),radial-gradient(circle at 15% 80%,rgba(79,209,197,.16),transparent 50%),linear-gradient(160deg,#101826,#0a0d14)}
+  .game-body{padding:20px 22px 24px;display:flex;flex-direction:column;gap:12px;flex:1}
+  .game-title-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .game-title-row h3{font-size:19px}
+  .genre{font-size:12.5px;color:var(--faint);white-space:nowrap}
+  .game-body p{color:var(--muted);font-size:14.5px;flex:1}
+  .tags{display:flex;gap:8px;flex-wrap:wrap}
+  .tag{
+    font-size:12px;color:var(--muted);border:1px solid var(--border);
+    border-radius:8px;padding:4px 10px;background:rgba(255,255,255,.03);
+  }
+  .tag-ai{color:var(--accent2);border:1px dashed rgba(255,177,92,.5)}
+  .game-links{display:flex;gap:16px;font-size:13.5px;font-weight:600}
+  .game-links a{text-decoration:none}
+  .game-links a:hover{text-decoration:underline}
+
+  /* ---------- AI disclosure ---------- */
+  .disclosure{
+    background:linear-gradient(135deg,rgba(255,138,61,.09),rgba(255,93,58,.04));
+    border:1px solid rgba(255,138,61,.35);border-left:4px solid var(--accent);
+    border-radius:var(--radius);padding:30px 34px;margin-bottom:26px;
+  }
+  .disclosure-badge{
+    display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);
+    font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--accent2);margin-bottom:16px;
+  }
+  .disclosure blockquote{font-size:17.5px;line-height:1.75;color:var(--text)}
+  .disclosure figcaption{margin-top:14px;font-size:13.5px;color:var(--faint)}
+  .why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:26px}
+  @media (max-width:900px){.why-grid{grid-template-columns:1fr}}
+  .why-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:24px;transition:transform .3s,border-color .3s;
+  }
+  .why-card:hover{transform:translateY(-4px);border-color:var(--border-strong)}
+  .why-icon{font-size:26px;margin-bottom:12px}
+  .why-card h3{font-size:16.5px;margin-bottom:8px}
+  .why-card p{color:var(--muted);font-size:14px}
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:26px}
+  @media (max-width:820px){.duo{grid-template-columns:1fr}}
+  .duo-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:26px}
+  .duo-head{
+    display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);
+    font-weight:700;font-size:14.5px;padding:7px 14px;border-radius:10px;margin-bottom:18px;
+  }
+  .duo-head.ai{background:rgba(143,183,255,.12);color:var(--blue);border:1px solid rgba(143,183,255,.35)}
+  .duo-head.human{background:rgba(95,211,154,.1);color:#8ce7b8;border:1px solid rgba(95,211,154,.35)}
+  .duo-card ul{list-style:none}
+  .duo-card li{padding:7px 0 7px 22px;position:relative;color:var(--muted);font-size:14.5px}
+  .duo-card li::before{content:"✦";position:absolute;left:0;color:var(--accent);font-size:12px;top:10px}
+  .duo-card li strong{color:var(--text);font-weight:600}
+  .commit{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:28px 32px;margin-bottom:26px;
+  }
+  .commit h3{font-size:18px;margin-bottom:14px}
+  .checklist{list-style:none;columns:1}
+  .checklist li{padding:7px 0 7px 32px;position:relative;color:var(--muted);font-size:14.5px;break-inside:avoid}
+  .checklist li::before{
+    content:"✓";position:absolute;left:0;top:6px;width:21px;height:21px;border-radius:7px;
+    background:rgba(95,211,154,.15);color:var(--ok);font-size:12.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .faq-item{
+    background:var(--panel);border:1px solid var(--border);border-radius:14px;
+    margin-bottom:10px;overflow:hidden;
+  }
+  .faq-item summary{
+    cursor:pointer;list-style:none;padding:17px 22px;font-weight:600;font-size:15px;
+    font-family:var(--font-display);display:flex;justify-content:space-between;gap:14px;align-items:center;
+  }
+  .faq-item summary::-webkit-details-marker{display:none}
+  .faq-item summary::after{content:"+";color:var(--accent);font-size:20px;font-weight:400;transition:transform .25s}
+  .faq-item[open] summary::after{transform:rotate(45deg)}
+  .faq-item .faq-body{padding:0 22px 18px;color:var(--muted);font-size:14.5px}
+
+  /* ---------- License ---------- */
+  .legal-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:30px}
+  @media (max-width:820px){.legal-grid{grid-template-columns:1fr}}
+  .legal-card{border-radius:var(--radius);padding:26px;border:1px solid var(--border)}
+  .legal-yes{background:rgba(95,211,154,.06);border-color:rgba(95,211,154,.3)}
+  .legal-no{background:rgba(255,107,107,.05);border-color:rgba(255,107,107,.3)}
+  .legal-card h3{font-size:16px;margin-bottom:14px;display:flex;align-items:center;gap:9px}
+  .legal-yes h3{color:#8ce7b8}.legal-no h3{color:#ff8f8f}
+  .legal-card ul{list-style:none}
+  .legal-card li{padding:6px 0 6px 24px;position:relative;color:var(--muted);font-size:14.5px}
+  .legal-yes li::before{content:"✓";position:absolute;left:0;color:var(--ok);font-weight:700}
+  .legal-no li::before{content:"✕";position:absolute;left:0;color:var(--danger);font-weight:700}
+  .doc-card{background:#0c0f16;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .doc-head{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    padding:16px 22px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.025);
+  }
+  .doc-head-title{font-family:var(--font-display);font-weight:700;font-size:15px}
+  .doc-head-title small{display:block;font-weight:400;color:var(--faint);font-size:12px;margin-top:2px}
+  pre.doc{
+    font-family:var(--font-mono);font-size:12.8px;line-height:1.7;color:#c8cfdb;
+    padding:26px 28px;max-height:460px;overflow:auto;white-space:pre-wrap;word-wrap:break-word;
+  }
+
+  /* ---------- Credits ---------- */
+  .credits-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin-bottom:22px}
+  @media (max-width:820px){.credits-grid{grid-template-columns:1fr}}
+  .credit-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:26px}
+  .credit-card h3{font-size:16px;margin-bottom:16px;color:var(--accent2)}
+  .credit-card ul{list-style:none}
+  .credit-card li{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,.07);font-size:14px}
+  .credit-card li:last-child{border-bottom:none}
+  .credit-card li span:first-child{color:var(--text);font-weight:500}
+  .credit-card li span:last-child{color:var(--muted);text-align:right}
+  .prov-table{width:100%;border-collapse:collapse;font-size:14px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .prov-wrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);margin-bottom:26px}
+  .prov-table th{
+    text-align:left;padding:13px 20px;font-family:var(--font-display);font-size:12px;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--faint);
+    background:rgba(255,255,255,.04);border-bottom:1px solid var(--border);
+  }
+  .prov-table td{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.06);color:var(--muted)}
+  .prov-table tr:last-child td{border-bottom:none}
+  .prov-table td:first-child{color:var(--text);font-weight:500;width:34%}
+  .prov-table .ai-tag{color:var(--accent2)}
+  .prov-table .hum-tag{color:#8ce7b8}
+  .thanks{color:var(--muted);font-size:14.5px;margin-bottom:24px}
+  .thanks strong{color:var(--text)}
+
+  /* ---------- Contact ---------- */
+  .contact-card{
+    text-align:center;background:linear-gradient(160deg,rgba(255,138,61,.1),rgba(79,70,229,.07));
+    border:1px solid var(--border-strong);border-radius:24px;padding:64px 34px;
+  }
+  .contact-card h2{margin-bottom:12px}
+  .contact-card p{color:var(--muted);max-width:520px;margin:0 auto 30px}
+  .contact-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+
+  /* ---------- Footer ---------- */
+  footer{border-top:1px solid var(--border);background:var(--bg);padding:56px 0 30px}
+  .footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:34px;margin-bottom:38px}
+  @media (max-width:820px){.footer-grid{grid-template-columns:1fr}}
+  .footer-brand p{color:var(--muted);font-size:14px;margin-top:12px;max-width:340px}
+  footer h4{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+  footer ul{list-style:none}
+  footer li{margin-bottom:9px}
+  footer ul a{color:var(--muted);font-size:14px;text-decoration:none}
+  footer ul a:hover{color:var(--accent2)}
+  .footer-bottom{
+    border-top:1px solid var(--border);padding-top:24px;display:flex;
+    justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--faint);
+  }
+
+  /* ---------- Reveal animation ---------- */
+  .reveal{opacity:0;transform:translateY(20px);transition:opacity .7s ease var(--d,0s),transform .7s ease var(--d,0s)}
+  .reveal.visible{opacity:1;transform:none}
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;bottom:26px;left:50%;transform:translate(-50%,80px);
+    background:#151a24;border:1px solid var(--border-strong);color:var(--text);
+    padding:12px 22px;border-radius:12px;font-size:14px;font-weight:500;
+    box-shadow:0 16px 40px rgba(0,0,0,.5);opacity:0;transition:.35s;z-index:100;pointer-events:none;
+  }
+  .toast.show{transform:translate(-50%,0);opacity:1}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1;transform:none}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<!-- Reusable fox logo -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="foxg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffb15c"/><stop offset=".55" stop-color="#ff7a3d"/><stop offset="1" stop-color="#ff5d3a"/>
+    </linearGradient>
+  </defs>
+  <symbol id="fox" viewBox="0 0 64 64">
+    <path d="M32 60 L6 32 L12 8 L28 22 H36 L52 8 L58 32 Z" fill="url(#foxg)"/>
+    <path d="M14 13 L25 21 L15 26 Z" fill="#b3481f" opacity=".55"/>
+    <path d="M50 13 L39 21 L49 26 Z" fill="#b3481f" opacity=".55"/>
+    <circle cx="21.5" cy="37" r="3.6" fill="#1a0e08"/>
+    <circle cx="42.5" cy="37" r="3.6" fill="#1a0e08"/>
+    <circle cx="22.7" cy="35.8" r="1.1" fill="#fff"/>
+    <circle cx="43.7" cy="35.8" r="1.1" fill="#fff"/>
+    <path d="M28.6 48 h6.8 L32 52.6 Z" fill="#1a0e08"/>
+  </symbol>
+</svg>
+
+<!-- Transparency notice bar -->
+<div class="notice-bar">
+  📢 <strong>Transparency notice:</strong> Foxman Studios uses generative AI for sprites &amp; UI in all of its games — <a href="#ai">read the full disclosure</a>.
+</div>
+
+<!-- ================= NAV ================= -->
+<header id="header">
+  <div class="container nav">
+    <a href="#home" class="brand" aria-label="Foxman Studios home">
+      <svg class="logo-mark" aria-hidden="true"><use href="#fox"/></svg>
+      <span class="brand-name">Foxman <span>Studios</span></span>
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="#games">Games</a>
+      <a href="#ai">AI Pipeline</a>
+      <a href="#license">License</a>
+      <a href="#credits">Credits</a>
+      <a href="#contact" class="btn btn-primary btn-small nav-cta">Contact us</a>
+    </nav>
+    <button class="burger" id="burger" aria-label="Toggle menu">☰</button>
+  </div>
+</header>
+
+<main>
+  <!-- ================= HERO ================= -->
+  <section class="hero" id="home">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="container hero-inner">
+      <div class="hero-badge">🦊 Independent game studio · <b>est. 2021</b></div>
+      <h1>Small team. Sharp games.<br><span class="grad-text">Zero secrets.</span></h1>
+      <p class="lede">
+        Foxman Studios makes original indie games — and we're open about how they're made.
+        We use <strong>generative AI to create our custom sprites and UI</strong>, because it's faster,
+        cheaper, and lets three humans focus on what only humans can do. Everything else here is craft:
+        design, code, sound, and a lot of coffee.
+      </p>
+      <div class="hero-actions">
+        <a href="#games" class="btn btn-primary">Browse our games →</a>
+        <a href="#ai" class="btn btn-ghost">Read the AI disclosure</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><b>04</b><span>Titles in the den</span></div>
+        <div class="stat"><b>100%</b><span>Disclosed asset provenance</span></div>
+        <div class="stat"><b>03</b><span>Humans on the team</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= GAMES ================= -->
+  <section id="games">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker">✦ Our games</span>
+        <h2>Four worlds in the den</h2>
+        <p>Every project lists how its art was made. Store links below are placeholders until launch day.</p>
+      </div>
+
+      <div class="games-grid">
+        <article class="game-card reveal">
+          <div class="game-art art-ember">
+            <span class="game-emoji">🦊</span>
+            <span class="status released">Out now</span>
+            <span class="prov-chip">✦ AI-assisted art</span>
+          </div>
+          <div class="game-body">
+            <div class="game-title-row"><h3>Ember Trail</h3><span class="genre">Action roguelite</span></div>
+            <p>Dash through a scorched wilderness as the last ember fox. 200+ hand-tuned rooms, reshuffled every run, with a soundtrack that fights back.</p>
+            <div class="tags"><span class="tag">Steam</span><span class="tag">itch.io</span><span class="tag">Switch</span><span class="tag tag-ai">AI-assisted art</span></div>
+            <div class="game-links"><a href="#">Store page ↗</a><a href="#">Press kit ↗</a></div>
+          </div>
+        </article>
+
+        <article class="game-card reveal" style="--d:.08s">
+          <div class="game-art art-neon">
+            <span class="game-emoji">🌃</span>
+            <span class="status wip">In development</span>
+            <span class="prov-chip">✦ AI-assisted art</span>
+          </div>
+          <div class="game-body">
+            <div class="game-title-row"><h3>Neon Burrow</h3><span class="genre">Twin-stick shooter</span></div>
+            <p>Underground neon warrens, wire-wolves, and a synthwave heartbeat. Wishlist it now and get the demo the moment it drops.</p>
+            <div class="tags"><span class="tag">Steam</span><span class="tag">Demo soon</span><span class="tag tag-ai">AI-assisted art</span></div>
+            <div class="game-links"><a href="#">Wishlist ↗</a><a href="#">Devlog ↗</a></div>
+          </div>
+        </article>
+
+        <article class="game-card reveal" style="--d:.16s">
+          <div class="game-art art-vale">
+            <span class="game-emoji">🌿</span>
+            <span class="status soon">Early 2026</span>
+            <span class="prov-chip">✦ AI-assisted art</span>
+          </div>
+          <div class="game-body">
+            <div class="game-title-row"><h3>Foxglove Vale</h3><span class="genre">Cozy farming sim</span></div>
+            <p>Slow mornings, strange mushrooms, and a village that remembers what you did last winter. Bring a basket.</p>
+            <div class="tags"><span class="tag">Steam</span><span class="tag">Switch</span><span class="tag tag-ai">AI-assisted art</span></div>
+            <div class="game-links"><a href="#">Wishlist ↗</a></div>
+          </div>
+        </article>
+
+        <article class="game-card reveal" style="--d:.24s">
+          <div class="game-art art-howl">
+            <span class="game-emoji">📻</span>
+            <span class="status proto">Prototyping</span>
+            <span class="prov-chip">✦ AI-assisted art</span>
+          </div>
+          <div class="game-body">
+            <div class="game-title-row"><h3>Static Howl</h3><span class="genre">Psychological horror</span></div>
+            <p>A radio station at the edge of the woods. It only broadcasts at 3:33 AM, and it only broadcasts for you.</p>
+            <div class="tags"><span class="tag">TBA platform</span><span class="tag tag-ai">AI-assisted art</span></div>
+            <div class="game-links"><a href="#">Follow the signal ↗</a></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= AI DISCLOSURE ================= -->
+  <section id="ai">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="kicker">✦ AI pipeline</span>
+        <h2>Our AI, out in the open</h2>
+        <p>This isn't buried in a legal footnote. It's on the front page, in every store listing, and in every credits screen we ship.</p>
+      </div>
+
+      <figure class="disclosure reveal">
+        <div class="disclosure-badge">📢 Public disclosure — updated March 2025</div>
+        <blockquote>
+          "Foxman Studios openly uses <strong>generative AI to create custom sprites and UI for our games</strong>.
+          The reason is simple and honest: it is <strong>cheaper and faster</strong> than manually hiring for every
+          single asset, and it <strong>eases the workload</strong> in areas where we'd otherwise spend weeks on repetitive
+          production tasks. As a three-person studio, that difference is what makes our games possible at all.
+          We disclose this everywhere — here, on store pages, and in-game — because players deserve to know how
+          their games are made. Every AI-assisted asset is reviewed, edited, and approved by a human before it ships."
+        </blockquote>
+        <figcaption>— Rin Voss, Founder &amp; Game Director</figcaption>
+      </figure>
+
+      <div class="why-grid">
+        <div class="why-card reveal">
+          <div class="why-icon">⚡</div>
+          <h3>Faster</h3>
+          <p>Sprite sets that once meant a three-week freelance commission queue now iterate in hours. Concepts, recolors, and icon batches land the same day we ask for them.</p>
+        </div>
+        <div class="why-card reveal" style="--d:.08s">
+          <div class="why-icon">💸</div>
+          <h3>Cheaper</h3>
+          <p>Manually hiring a full art team is far beyond an indie budget of our size — it would cost more than our entire production budget. Generative tools keep our games affordable and our studio independent.</p>
+        </div>
+        <div class="why-card reveal" style="--d:.16s">
+          <div class="why-icon">🧘</div>
+          <h3>Eases the workload</h3>
+          <p>Repetitive production — recolor passes, icon variants, tiling textures — is exactly what models are good at. It eases the load so the team spends its energy on design, not drudgery.</p>
+        </div>
+      </div>
+
+      <div class="duo">
+        <div class="duo-card reveal">
+          <span class="duo-head ai">🤖 Where AI helps</span>
+          <ul>
+            <li><strong>Sprite concepts</strong> &amp; recolor variants</li>
+            <li><strong>UI icon sets</strong>, frames &amp; menu decoration</li>
+            <li>Tileable <strong>textures</strong> &amp; background passes</li>
+            <li>Store-page mockups &amp; marketing key-art drafts</li>
+          </ul>
+        </div>
+        <div class="duo-card reveal" style="--d:.08s">
+          <span class="duo-head human">🧠 Where humans lead</span>
+          <ul>
+            <li><strong>Game design</strong>, systems &amp; balance</li>
+            <li><strong>All gameplay code</strong> — written by people</li>
+            <li><strong>Level &amp; narrative design</strong>, dialogue</li>
+            <li><strong>Music, SFX</strong> &amp; mixing</li>
+            <li><strong>Final art direction:</strong> every asset reviewed, edited &amp; approved by hand</li>
+            <li><strong>QA</strong>, accessibility &amp; store publishing</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="commit reveal">
+        <h3>Our commitments</h3>
+        <ul class="checklist">
+          <li>Every AI-assisted asset passes a human review-and-edit pass before it ships.</li>
+          <li>AI use is disclosed on every store page and inside every game's credits screen.</li>
+          <li>We only use commercially licensed or self-hosted models, and we don't train on artists' work we don't have rights to.</li>
+          <li>Generated assets stay exclusive to Foxman games — we don't resell raw outputs.</li>
+          <li>Ask us anything: we'll tell you exactly which parts of a game were AI-assisted.</li>
+          <li>When revenue allows it, we intend to commission human artists for key art and cinematics.</li>
+        </ul>
+      </div>
+
+      <div class="reveal">
+        <h3 style="font-size:19px;margin-bottom:14px">Frequently asked</h3>
+        <details class="faq-item">
+          <summary>Do you use AI to write code or design levels?</summary>
+          <div class="faq-body">No. Code, level design, and writing are human-made, full stop. Our AI use is limited to visual assets: sprites, UI, and textures — all human-reviewed before shipping.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Is this about replacing artists?</summary>
+          <div class="faq-body">Honest answer: we're a three-person team, and a full-time art staff was never in the budget. Hiring manually for every sprite and UI set would cost more than our entire production budget. Generative tools are how a studio our size ships games that look finished. As revenue grows, we plan to bring human artists in for the work that matters most.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Which tools do you actually use?</summary>
+          <div class="faq-body">Stable Diffusion (self-hosted, with our own fine-tunes) for sprite and UI concepting, Figma for UI layout, and Aseprite for hand-finishing. Full list in the <a href="#credits">credits section</a>.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Can I use your game assets in my own project?</summary>
+          <div class="faq-body">Only within the EULA: personal use, fan art, and content creation — yes. Extracting assets for other games, resale, or training AI models on them — no. Full details in the <a href="#license">license section</a>.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Where is this disclosed in-game?</summary>
+          <div class="faq-body">In the credits screen of every release, plus a provenance note on each store page. If a build uses AI anywhere, the credits say exactly where.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LICENSE / EULA ================= -->
+  <section id="license">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker">✦ Licensing</span>
+        <h2>The EULA, in plain sight</h2>
+        <p>The short version below, and the full legal text underneath — readable on this page, downloadable as a text file.</p>
+      </div>
+
+      <div class="legal-grid">
+        <div class="legal-card legal-yes reveal">
+          <h3>✅ What you can do</h3>
+          <ul>
+            <li>Play the game, personally and non-commercially.</li>
+            <li>Stream, record, and monetize gameplay videos.</li>
+            <li>Publish screenshots, reviews &amp; press coverage.</li>
+            <li>Make free, clearly fan-made mods for personal use.</li>
+            <li>Draw fan art. Seriously, we love it.</li>
+          </ul>
+        </div>
+        <div class="legal-card legal-no reveal" style="--d:.08s">
+          <h3>🚫 What you can't do</h3>
+          <ul>
+            <li>Resell, rent, or redistribute the game for profit.</li>
+            <li>Extract or reuse game assets in other products.</li>
+            <li>Train AI models on our assets, code, or audio.</li>
+            <li>Use the game in NFTs, blockchain or crypto projects.</li>
+            <li>Remove or alter provenance &amp; credit notices.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="doc-card reveal">
+        <div class="doc-head">
+          <div class="doc-head-title">Foxman Studios — End-User License Agreement
+            <small>Last updated: March 1, 2025 · Applies to all Foxman Studios titles</small>
+          </div>
+          <button class="btn btn-ghost btn-small" id="downloadEula">⬇ Download EULA (.txt)</button>
+        </div>
+<pre class="doc" id="eulaDoc">FOXMAN STUDIOS — END-USER LICENSE AGREEMENT ("EULA")
+Last updated: March 1, 2025
+
+1. THE AGREEMENT
+   This End-User License Agreement is a legal agreement between you ("You") and
+   Foxman Studios ("Studio", "we", "us") governing your use of our games,
+   software, and associated content ("the Game"). Installing, copying, or
+   otherwise using the Game means you accept these terms.
+
+2. LICENSE GRANT
+   We grant You a personal, non-exclusive, non-transferable, revocable license
+   to install and play the Game for personal, non-commercial entertainment
+   purposes, on platforms for which You purchased or legitimately received it.
+
+3. WHAT YOU MAY DO
+   3.1  Stream, record, and monetize gameplay videos and live streams.
+   3.2  Publish screenshots and written coverage (press, reviews, blogs).
+   3.3  Create free mods for personal use, clearly marked as fan-made.
+   3.4  Create and share fan art.
+
+4. WHAT YOU MAY NOT DO
+   4.1  Resell, rent, lease, or distribute the Game or any part of it for profit.
+   4.2  Extract, republish, or reuse Game assets (sprites, UI, audio, code) in
+        other products.
+   4.3  Claim authorship of the Game or present it as Your own work.
+   4.4  Use the Game, its assets, its code, or its audio to train machine-learning
+        or generative AI models.
+   4.5  Use the Game or its assets in blockchain products, NFTs, or crypto projects.
+   4.6  Remove or alter any proprietary, credit, or provenance notices.
+
+5. AI-GENERATED CONTENT DISCLOSURE
+   Portions of the Game's art assets — including character sprites, UI elements,
+   icons, and textures — were produced with generative AI tools, then curated,
+   edited, and approved by the Studio's human team. This use is disclosed in the
+   Game's credits and on its store pages. The Game's code, design, narrative, and
+   audio are human-made. Nothing in this section limits Your rights under
+   Section 3.
+
+6. INTELLECTUAL PROPERTY
+   The Game is licensed, not sold. We retain all rights, title, and interest in
+   the Game, including all AI-assisted assets following human curation.
+
+7. WARRANTY DISCLAIMER
+   THE GAME IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+8. LIMITATION OF LIABILITY
+   To the maximum extent permitted by law, the Studio is not liable for any
+   indirect, incidental, or consequential damages arising from use of the Game.
+
+9. TERMINATION
+   This license ends automatically if You breach it. Sections 4 and 6-8 survive
+   termination.
+
+10. CHANGES
+   We may update this EULA for future builds. Material changes will be announced
+   on our website.
+
+11. GOVERNING LAW
+   This EULA is governed by the laws of Ireland, excluding its conflict-of-law
+   rules.
+
+12. CONTACT
+   Questions about this EULA: legal@foxmanstudios.gg
+
+© 2025 Foxman Studios. All rights reserved.</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CREDITS ================= -->
+  <section id="credits">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="kicker">✦ Credits</span>
+        <h2>Who made what</h2>
+        <p>The same provenance info shown here ships inside every one of our games.</p>
+      </div>
+
+      <div class="credits-grid">
+        <div class="credit-card reveal">
+          <h3>The den</h3>
+          <ul>
+            <li><span>Game Direction &amp; Production</span><span>Rin Voss</span></li>
+            <li><span>Gameplay &amp; Tools Programming</span><span>Mara Ibarra</span></li>
+            <li><span>Level &amp; Systems Design</span><span>Kenji Tanaka</span></li>
+            <li><span>Music &amp; Sound</span><span>Sofia Doyle</span></li>
+            <li><span>Community &amp; QA</span><span>The Foxhole Discord</span></li>
+            <li><span>Chief Morale Officer</span><span>Juno 🦊 (fox, 4 y/o)</span></li>
+          </ul>
+        </div>
+        <div class="credit-card reveal" style="--d:.08s">
+          <h3>Tools &amp; technology</h3>
+          <ul>
+            <li><span>Engine</span><span>Godot 4</span></li>
+            <li><span>Generative art</span><span>Stable Diffusion (self-hosted) + custom LoRAs</span></li>
+            <li><span>Sprite cleanup</span><span>Aseprite</span></li>
+            <li><span>UI layout</span><span>Figma</span></li>
+            <li><span>Audio</span><span>REAPER · Kenney CC0 SFX · Sonniss GDC packs</span></li>
+            <li><span>Fonts</span><span>Space Grotesk &amp; Inter (SIL OFL)</span></li>
+            <li><span>Version control</span><span>Git</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="prov-wrap reveal">
+        <table class="prov-table">
+          <thead><tr><th>Asset</th><th>How it's made</th></tr></thead>
+          <tbody>
+            <tr><td>Character &amp; enemy sprites</td><td><span class="ai-tag">AI concept</span> → human redraw &amp; finish (Aseprite)</td></tr>
+            <tr><td>UI icons, frames &amp; menus</td><td><span class="ai-tag">AI-generated</span> → human layout &amp; polish (Figma)</td></tr>
+            <tr><td>Tilesets &amp; textures</td><td><span class="ai-tag">AI-generated</span> → human edit</td></tr>
+            <tr><td>Code &amp; systems</td><td><span class="hum-tag">100% human-written</span></td></tr>
+            <tr><td>Music &amp; sound</td><td><span class="hum-tag">Human-composed</span> + CC0 libraries</td></tr>
+            <tr><td>Writing &amp; narrative</td><td><span class="hum-tag">100% human-written</span></td></tr>
+            <tr><td>Logos &amp; key art</td><td><span class="hum-tag">Human-drawn</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="thanks reveal"><strong>Special thanks:</strong> our Discord beta testers, every wishlister, the Godot community, and every indie dev who talks openly about their process. You make the woods less dark.</p>
+
+      <div class="reveal">
+        <button class="btn btn-primary" id="copyCredits">📋 Copy credits as text</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT ================= -->
+  <section id="contact">
+    <div class="container">
+      <div class="contact-card reveal">
+        <h2>Come say hi</h2>
+        <p>Press, partnerships, or just fox facts — our inbox is open. We answer faster than Static Howl broadcasts.</p>
+        <div class="contact-actions">
+          <a class="btn btn-primary" href="mailto:hello@foxmanstudios.gg">✉ hello@foxmanstudios.gg</a>
+          <a class="btn btn-ghost" href="#">Discord</a>
+          <a class="btn btn-ghost" href="#">Bluesky</a>
+          <a class="btn btn-ghost" href="#">Press kit</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#home" class="brand">
+          <svg class="logo-mark" style="width:30px;height:30px" aria-hidden="true"><use href="#fox"/></svg>
+          <span class="brand-name">Foxman <span>Studios</span></span>
+        </a>
+        <p>Independent games made lean and made honest. Our games contain AI-generated art assets, disclosed in every credits screen — if we ever hide it, you have our permission to be suspicious.</p>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="#games">Games</a></li>
+          <li><a href="#ai">AI Pipeline</a></li>
+          <li><a href="#credits">Credits</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#license">EULA</a></li>
+          <li><a href="#ai">AI Disclosure</a></li>
+          <li><a href="#license">Asset usage rules</a></li>
+          <li><a href="mailto:legal@foxmanstudios.gg">legal@foxmanstudios.gg</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2025</span> Foxman Studios. All rights reserved.</span>
+      <span>Made with patience, caffeine, and a responsibly-used diffusion model. 🦊</span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+  // ---------- Header shadow on scroll ----------
+  const header = document.getElementById('header');
+  addEventListener('scroll', () => header.classList.toggle('scrolled', scrollY > 10), {passive:true});
+
+  // ---------- Mobile menu ----------
+  const burger = document.getElementById('burger');
+  burger.addEventListener('click', () => document.body.classList.toggle('menu-open'));
+  document.querySelectorAll('.nav-links a').forEach(a =>
+    a.addEventListener('click', () => document.body.classList.remove('menu-open')));
+
+  // ---------- Scroll reveal ----------
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, {threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // ---------- Footer year ----------
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ---------- EULA download ----------
+  document.getElementById('downloadEula').addEventListener('click', () => {
+    const text = document.getElementById('eulaDoc').textContent;
+    const blob = new Blob([text], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Foxman-Studios-EULA.txt';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('EULA downloaded ✓');
+  });
+
+  // ---------- Copy credits ----------
+  const CREDITS_TEXT = `=== FOXMAN STUDIOS — CREDITS & ASSET PROVENANCE ===
+
+TEAM
+  Game Direction & Production ..... Rin Voss
+  Gameplay & Tools Programming .... Mara Ibarra
+  Level & Systems Design .......... Kenji Tanaka
+  Music & Sound ................... Sofia Doyle
+  Community & QA .................. The Foxhole Discord
+  Chief Morale Officer ............ Juno the fox
+
+ART PROVENANCE
+  Sprites, UI & textures .......... Generated with Stable Diffusion
+                                    (self-hosted, custom fine-tunes), curated
+                                    and hand-finished in Aseprite.
+                                    Disclosed per our public AI policy.
+  Key art & logos ................. Human-drawn
+  Code, design & narrative ........ Human-made. No exceptions.
+
+TOOLS & TECHNOLOGY
+  Engine .......................... Godot 4
+  Generative art .................. Stable Diffusion (self-hosted) + custom LoRAs
+  Sprite cleanup .................. Aseprite
+  UI layout ....................... Figma
+  Audio ........................... REAPER, Kenney CC0 SFX, Sonniss GDC packs
+  Fonts ........................... Space Grotesk & Inter (SIL OFL)
+  Version control ................. Git
+
+SPECIAL THANKS
+  Our Discord beta testers, every wishlister, the Godot community,
+  and every indie dev who talks openly about their process.
+
+© 2025 Foxman Studios — foxmanstudios.gg`;
+
+  document.getElementById('copyCredits').addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    try {
+      await navigator.clipboard.writeText(CREDITS_TEXT);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = CREDITS_TEXT;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+    showToast('Credits copied to clipboard ✓');
+  });
+
+  // ---------- Toast ----------
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+</script>
+</body>
+</html>
